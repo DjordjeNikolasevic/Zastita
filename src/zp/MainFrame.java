@@ -749,7 +749,6 @@ public class MainFrame extends javax.swing.JFrame {
         jPanel2.setVisible(false);
         jPanel3.setVisible(false);
         jPanel4.setVisible(true);
-        sssasd;
     }//GEN-LAST:event_jMenuItem4ActionPerformed
 
     /**
