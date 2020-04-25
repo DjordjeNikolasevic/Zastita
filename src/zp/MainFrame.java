@@ -5,6 +5,24 @@
  */
 package zp;
 
+import java.awt.RenderingHints.Key;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Security;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 /**
  *
  * @author nd160074d
@@ -695,7 +713,43 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jPasswordField1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
+        try {
+            String password=jPasswordField1.getText();
+            //Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+            
+            byte[] input = "Cao ja sam djole.".getBytes();
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            //SecureRandom random = new SecureRandom();
+            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+            
+            generator.initialize(2048);
+            KeyPair pair = generator.generateKeyPair();
+            PublicKey pubKey = pair.getPublic();
+            PrivateKey privKey = pair.getPrivate();
+            
+            cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+            System.out.println("Private key:"+((RSAPrivateKey)privKey).getPrivateExponent());
+            System.out.println("Public key:"+((RSAPublicKey)pubKey).getPublicExponent());
+            
+            byte[] cipherText = cipher.doFinal(input);
+            System.out.println("cipher: ");
+            System.out.println(new String(cipherText));
+            cipher.init(Cipher.DECRYPT_MODE, privKey);
+            byte[] plainText = cipher.doFinal(cipherText);
+            System.out.println("plain : " + new String(plainText));
+            
+            passwordDialog.setVisible(false);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void potvrdaGenerisanjeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_potvrdaGenerisanjeActionPerformed
