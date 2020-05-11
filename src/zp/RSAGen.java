@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Date;
+import java.util.Iterator;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
 import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
 import org.bouncycastle.bcpg.sig.Features;
@@ -25,6 +26,7 @@ import org.bouncycastle.openpgp.PGPKeyPair;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPKeyRingGenerator;
 import org.bouncycastle.openpgp.PGPPublicKey;
+import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
@@ -43,7 +45,7 @@ public class RSAGen
     {
         char pass[] = {'h', 'e', 'l', 'l', 'o'};
         PGPKeyRingGenerator krgen = generateKeyRingGenerator
-            ("alice@example.com", pass);
+            ("alice@example.com", pass, 2048);
 
         // Generate public key ring, dump to file.
         PGPPublicKeyRing pkr = krgen.generatePublicKeyRing();
@@ -58,12 +60,35 @@ public class RSAGen
             (new FileOutputStream("dummy.skr"));
         skr.encode(secout);
         secout.close();
+        
+
+        Iterator<PGPPublicKey> it=pkr.getPublicKeys();
+        while(it.hasNext()){
+            PGPPublicKey k=it.next();
+            System.out.println(k.getKeyID());
+            System.out.println(k.getAlgorithm());
+            System.out.println(k.isMasterKey());
+            System.out.println(k.isEncryptionKey());
+            System.out.println("----------------------");
+        }
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        Iterator<PGPSecretKey> it2=skr.getSecretKeys();
+        while(it2.hasNext()){
+            PGPSecretKey k=it2.next();
+            System.out.println(k.getKeyID());
+            System.out.println(k.getKeyEncryptionAlgorithm());
+            System.out.println(k.isMasterKey());
+            System.out.println(k.isSigningKey());
+            System.out.println("----------------------");
+        }
     }
 
     public final static PGPKeyRingGenerator generateKeyRingGenerator
-        (String id, char[] pass)
+        (String id, char[] pass, int keySize)
         throws Exception
-    { return generateKeyRingGenerator(id, pass, 0xc0); }
+    { return generateKeyRingGenerator(id, pass, 0xc0, keySize); }
 
     // Note: s2kcount is a number between 0 and 0xff that controls the
     // number of times to iterate the password hash before use. More
@@ -79,7 +104,7 @@ public class RSAGen
     // default -- about 130,000 iterations.
 
     public final static PGPKeyRingGenerator generateKeyRingGenerator
-        (String id, char[] pass, int s2kcount)
+        (String id, char[] pass, int s2kcount, int keySize)
         throws Exception
     {
         // This object generates individual key-pairs.
@@ -91,7 +116,7 @@ public class RSAGen
         kpg.init
             (new RSAKeyGenerationParameters
              (BigInteger.valueOf(0x10001),
-              new SecureRandom(), 2048, 12));
+              new SecureRandom(), keySize, 12));
 
         // First create the master (signing) key with the generator.
         PGPKeyPair rsakp_sign =

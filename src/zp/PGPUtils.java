@@ -21,6 +21,7 @@ import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.SignatureException;
 import java.util.Date;
 import java.util.Iterator;
  
@@ -67,7 +68,8 @@ import org.bouncycastle.openpgp.operator.bc.BcPGPDataEncryptorBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPGPDigestCalculatorProvider;
 import org.bouncycastle.openpgp.operator.bc.BcPublicKeyDataDecryptorFactory;
 import org.bouncycastle.openpgp.operator.bc.BcPublicKeyKeyEncryptionMethodGenerator;
-
+import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.io.Streams;
  
 public class PGPUtils {
  
@@ -86,24 +88,39 @@ public class PGPUtils {
     {
  
         PGPPublicKeyRingCollection keyRingCollection = new PGPPublicKeyRingCollection(PGPUtil.getDecoderStream(in),new BcKeyFingerprintCalculator());
- 
+        
         //
         // we just loop through the collection till we find a key suitable for encryption, in the real
         // world you would probably want to be a bit smarter about this.
         //
         PGPPublicKey publicKey = null;
- 
+
         //
         // iterate through the key rings.
         //
         Iterator<PGPPublicKeyRing> rIt = keyRingCollection.getKeyRings();
- 
+        Iterator<PGPPublicKeyRing> rIt2 = keyRingCollection.getKeyRings("alice@example.com");
+        while (rIt2.hasNext()){
+            rIt2.next();
+            System.out.println("Nadjen ring");
+        }
+        System.out.println("Number of rings: "+keyRingCollection.size());
+        
         while (publicKey == null && rIt.hasNext()) {
             PGPPublicKeyRing kRing = rIt.next();
+
+            Iterator<PGPPublicKey> kIt2 = kRing.getPublicKeys();
+            while (kIt2.hasNext()){
+                kIt2.next();
+                System.out.println("Nadjen kljuc");
+            }
+            
             Iterator<PGPPublicKey> kIt = kRing.getPublicKeys();
             while (publicKey == null && kIt.hasNext()) {
                 PGPPublicKey key = kIt.next();
+                //System.out.println("Nadjen kljuc");
                 if (key.isEncryptionKey()) {
+                    //System.out.println("Nadjen za enkripiciju");
                     publicKey = key;
                 }
             }
@@ -135,6 +152,7 @@ public class PGPUtils {
         Iterator<PGPSecretKeyRing> rIt = keyRingCollection.getKeyRings();
         while (secretKey == null && rIt.hasNext()) {
             PGPSecretKeyRing keyRing = rIt.next();
+
             Iterator<PGPSecretKey> kIt = keyRing.getSecretKeys();
             while (secretKey == null && kIt.hasNext()) {
                 PGPSecretKey key = kIt.next();
@@ -192,11 +210,7 @@ public class PGPUtils {
         throws PGPException, FileNotFoundException, IOException
     {
         if (pgpSecKey == null) return null;
- 
-        ArmoredOutputStream secretOut=new ArmoredOutputStream(new FileOutputStream("secret.asc"));
-        pgpSecKey.encode(secretOut);
-        secretOut.close();
-        
+     
         PBESecretKeyDecryptor decryptor = new BcPBESecretKeyDecryptorBuilder(new BcPGPDigestCalculatorProvider()).build(pass);
         return pgpSecKey.extractPrivateKey(decryptor);
     }
@@ -248,27 +262,7 @@ public class PGPUtils {
  
         Object message = plainFact.nextObject();
  
-        if (message instanceof  PGPCompressedData) {
-            PGPCompressedData cData = (PGPCompressedData) message;
-            PGPObjectFactory pgpFact = new PGPObjectFactory(cData.getDataStream(),new BcKeyFingerprintCalculator());
- 
-            message = pgpFact.nextObject();
-        }
- 
-        if (message instanceof  PGPLiteralData) {
-            PGPLiteralData ld = (PGPLiteralData) message;
- 
-            InputStream unc = ld.getInputStream();
-            int ch;
- 
-            while ((ch = unc.read()) >= 0) {
-                out.write(ch);
-            }
-        } else if (message instanceof  PGPOnePassSignatureList) {
-            throw new PGPException("Encrypted message contains a signed message - not literal data.");
-        } else {
-            throw new PGPException("Message is not a simple encrypted file - type unknown.");
-        }
+        
  
         if (pbe.isIntegrityProtected()) {
             if (!pbe.verify()) {
@@ -282,7 +276,8 @@ public class PGPUtils {
         String fileName,
         PGPPublicKey encKey,
         boolean armor,
-        boolean withIntegrityCheck)
+        boolean withIntegrityCheck,
+        boolean isCompressed)
         throws IOException, NoSuchProviderException, PGPException
     {
         Security.addProvider(new BouncyCastleProvider());
@@ -292,7 +287,13 @@ public class PGPUtils {
         }
  
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        PGPCompressedDataGenerator comData = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
+        PGPCompressedDataGenerator comData=null;
+        if(isCompressed){
+            comData = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
+        }
+        else{
+            comData = new PGPCompressedDataGenerator(PGPCompressedData.UNCOMPRESSED);
+        }
  
         PGPUtil.writeFileToLiteralData(
                 comData.open(bOut),
@@ -323,7 +324,7 @@ public class PGPUtils {
         PGPSecretKey secretKey,
         String password,
         boolean armor,
-        boolean withIntegrityCheck )
+        boolean withIntegrityCheck)
         throws Exception
     {
  
