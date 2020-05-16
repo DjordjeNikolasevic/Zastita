@@ -29,6 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
 import org.bouncycastle.bcpg.PublicKeyAlgorithmTags;
+import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
 import org.bouncycastle.bcpg.sig.KeyFlags;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPCompressedData;
@@ -277,7 +278,9 @@ public class PGPUtils {
         PGPPublicKey encKey,
         boolean armor,
         boolean withIntegrityCheck,
-        boolean isCompressed)
+        boolean isCompressed,
+        boolean isEncrypted,
+        int alg)
         throws IOException, NoSuchProviderException, PGPException
     {
         Security.addProvider(new BouncyCastleProvider());
@@ -302,7 +305,7 @@ public class PGPUtils {
  
         comData.close();
  
-        BcPGPDataEncryptorBuilder dataEncryptor = new BcPGPDataEncryptorBuilder(PGPEncryptedData.TRIPLE_DES);
+        BcPGPDataEncryptorBuilder dataEncryptor = new BcPGPDataEncryptorBuilder(alg);
         dataEncryptor.setWithIntegrityPacket(withIntegrityCheck);
         dataEncryptor.setSecureRandom(new SecureRandom());
  
@@ -310,9 +313,14 @@ public class PGPUtils {
         encryptedDataGenerator.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(encKey));
  
         byte[] bytes = bOut.toByteArray();
-        OutputStream cOut = encryptedDataGenerator.open(out, bytes.length);
-        cOut.write(bytes);
-        cOut.close();
+        if(isEncrypted){
+            OutputStream cOut = encryptedDataGenerator.open(out, bytes.length);
+            cOut.write(bytes);
+            cOut.close();
+        }
+        else{
+            out.write(bytes);
+        }
         out.close();
     }
  
@@ -324,7 +332,10 @@ public class PGPUtils {
         PGPSecretKey secretKey,
         String password,
         boolean armor,
-        boolean withIntegrityCheck)
+        boolean withIntegrityCheck,
+        boolean isCompressed,
+        boolean isEncrypted,
+        int alg)
         throws Exception
     {
  
@@ -336,18 +347,31 @@ public class PGPUtils {
             out = new ArmoredOutputStream(out);
         }
  
-        BcPGPDataEncryptorBuilder dataEncryptor = new BcPGPDataEncryptorBuilder(PGPEncryptedData.TRIPLE_DES);
-        dataEncryptor.setWithIntegrityPacket(withIntegrityCheck);
-        dataEncryptor.setSecureRandom(new SecureRandom());
- 
-        PGPEncryptedDataGenerator encryptedDataGenerator = new PGPEncryptedDataGenerator(dataEncryptor);
-        encryptedDataGenerator.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(publicKey));
- 
-        OutputStream encryptedOut = encryptedDataGenerator.open(out, new byte[PGPUtils.BUFFER_SIZE]);
- 
+        PGPCompressedDataGenerator compressedDataGenerator = null;
         // Initialize compressed data generator
-        PGPCompressedDataGenerator compressedDataGenerator = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
-        OutputStream compressedOut = compressedDataGenerator.open(encryptedOut, new byte [PGPUtils.BUFFER_SIZE]);
+        if(isCompressed){
+            compressedDataGenerator = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
+        }
+        else{
+            compressedDataGenerator = new PGPCompressedDataGenerator(PGPCompressedData.UNCOMPRESSED);
+        }
+        OutputStream compressedOut=null;
+        PGPEncryptedDataGenerator encryptedDataGenerator=null;
+        if(isEncrypted){
+            BcPGPDataEncryptorBuilder dataEncryptor = new BcPGPDataEncryptorBuilder(alg);
+            dataEncryptor.setWithIntegrityPacket(withIntegrityCheck);
+            dataEncryptor.setSecureRandom(new SecureRandom());
+
+            encryptedDataGenerator = new PGPEncryptedDataGenerator(dataEncryptor);
+            encryptedDataGenerator.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(publicKey));
+
+            OutputStream encryptedOut = encryptedDataGenerator.open(out, new byte[PGPUtils.BUFFER_SIZE]);
+
+            compressedOut = compressedDataGenerator.open(encryptedOut, new byte [PGPUtils.BUFFER_SIZE]);
+        }
+        else{
+            compressedOut = compressedDataGenerator.open(out, new byte [PGPUtils.BUFFER_SIZE]);
+        }
  
         // Initialize signature generator
         PGPPrivateKey privateKey = findPrivateKey(secretKey, password.toCharArray());
@@ -392,7 +416,9 @@ public class PGPUtils {
         // Generate the signature, compress, encrypt and write to the "out" stream
         signatureGenerator.generate().encode(compressedOut);
         compressedDataGenerator.close();
-        encryptedDataGenerator.close();
+        if(isEncrypted){
+            encryptedDataGenerator.close();
+        }
         if (armor) {
             out.close();
         }
