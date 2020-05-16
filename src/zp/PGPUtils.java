@@ -24,6 +24,7 @@ import java.security.Security;
 import java.security.SignatureException;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
  
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
@@ -275,7 +276,7 @@ public class PGPUtils {
     public static void encryptFile(
         OutputStream out,
         String fileName,
-        PGPPublicKey encKey,
+        List<PGPPublicKey> encKeys,
         boolean armor,
         boolean withIntegrityCheck,
         boolean isCompressed,
@@ -310,7 +311,9 @@ public class PGPUtils {
         dataEncryptor.setSecureRandom(new SecureRandom());
  
         PGPEncryptedDataGenerator encryptedDataGenerator = new PGPEncryptedDataGenerator(dataEncryptor);
-        encryptedDataGenerator.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(encKey));
+        for(PGPPublicKey key:encKeys){
+            encryptedDataGenerator.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(key));
+        }
  
         byte[] bytes = bOut.toByteArray();
         if(isEncrypted){
@@ -328,7 +331,7 @@ public class PGPUtils {
     public static void signEncryptFile(
         OutputStream out,
         String fileName,
-        PGPPublicKey publicKey,
+        List<PGPPublicKey> publicKeys,
         PGPSecretKey secretKey,
         String password,
         boolean armor,
@@ -363,7 +366,9 @@ public class PGPUtils {
             dataEncryptor.setSecureRandom(new SecureRandom());
 
             encryptedDataGenerator = new PGPEncryptedDataGenerator(dataEncryptor);
-            encryptedDataGenerator.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(publicKey));
+            for(PGPPublicKey key:publicKeys){
+                encryptedDataGenerator.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(key));
+            }
 
             OutputStream encryptedOut = encryptedDataGenerator.open(out, new byte[PGPUtils.BUFFER_SIZE]);
 

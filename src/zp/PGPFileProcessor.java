@@ -28,7 +28,7 @@ public class PGPFileProcessor {
     public boolean encrypt() throws Exception {
         FileInputStream keyIn = new FileInputStream(publicKeyFileName);
         FileOutputStream out = new FileOutputStream(outputFileName);
-        PGPUtils.encryptFile(out, inputFileName, PGPUtils.readPublicKey(keyIn), asciiArmored, integrityCheck, true, true,2);
+        PGPUtils.encryptFile(out, inputFileName, null, asciiArmored, integrityCheck, true, true,2);
         out.close();
         keyIn.close();
         return true;
@@ -45,7 +45,7 @@ public class PGPFileProcessor {
         PGPUtils.signEncryptFile(
                 out,
                 this.getInputFileName(),
-                publicKey,
+                null,
                 secretKey,
                 this.getPassphrase(),
                 this.isAsciiArmored(),

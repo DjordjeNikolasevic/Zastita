@@ -28,6 +28,7 @@ import java.security.Security;
 import java.security.SignatureException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -209,14 +210,15 @@ public class MainFrame extends javax.swing.JFrame {
         uspeh = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jScrollPane6 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        publicKeys = new javax.swing.JList<>();
         uveziPrivatni = new javax.swing.JButton();
         jLabel13 = new javax.swing.JLabel();
-        izaberiKljuc = new javax.swing.JButton();
         izvezi = new javax.swing.JButton();
         jLabel15 = new javax.swing.JLabel();
         fileName = new javax.swing.JTextField();
         uveziJavni = new javax.swing.JButton();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        secretKeys = new javax.swing.JList<>();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -756,12 +758,12 @@ public class MainFrame extends javax.swing.JFrame {
         jPanel5.setPreferredSize(new java.awt.Dimension(800, 600));
         jPanel5.setVisible(false);
 
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+        publicKeys.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane6.setViewportView(jList1);
+        jScrollPane6.setViewportView(publicKeys);
 
         uveziPrivatni.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         uveziPrivatni.setText("Uvezi privatni");
@@ -773,9 +775,6 @@ public class MainFrame extends javax.swing.JFrame {
 
         jLabel13.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         jLabel13.setText("IZVOZ KLJUCA");
-
-        izaberiKljuc.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        izaberiKljuc.setText("Izaberi kljuc");
 
         izvezi.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         izvezi.setText("Izvezi");
@@ -798,63 +797,66 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
+        secretKeys.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane4.setViewportView(secretKeys);
+
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(148, 148, 148)
+                .addComponent(uveziJavni)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(uveziPrivatni)
+                .addGap(158, 158, 158))
+            .addGroup(jPanel5Layout.createSequentialGroup()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addGap(80, 80, 80)
-                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 286, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 252, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(izvezi)
+                        .addGap(18, 18, 18)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(154, 154, 154)
-                        .addComponent(jLabel13)))
-                .addGap(151, 151, 151)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel15)
-                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(fileName, javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(izaberiKljuc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap(135, Short.MAX_VALUE))
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGap(174, 174, 174)
-                .addComponent(izvezi)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(uveziJavni)
-                .addGap(33, 33, 33)
-                .addComponent(uveziPrivatni)
-                .addGap(69, 69, 69))
+                        .addGap(314, 314, 314)
+                        .addComponent(jLabel13))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGap(315, 315, 315)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(fileName))))
+                .addContainerGap(105, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(65, 65, 65)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel13)
-                            .addComponent(jLabel15))
-                        .addGap(60, 60, 60)
-                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(29, 29, 29))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(229, 229, 229)
-                        .addComponent(izaberiKljuc)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(fileName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(42, 42, 42)))
+                .addGap(65, 65, 65)
+                .addComponent(jLabel13)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(19, 19, 19)
+                        .addGap(140, 140, 140)
                         .addComponent(izvezi)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(124, 124, 124))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(uveziPrivatni)
-                            .addComponent(uveziJavni))
-                        .addGap(140, 140, 140))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
+                            .addComponent(jScrollPane6))
+                        .addGap(28, 28, 28)))
+                .addComponent(jLabel15)
+                .addGap(18, 18, 18)
+                .addComponent(fileName, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(uveziJavni)
+                    .addComponent(uveziPrivatni))
+                .addGap(85, 85, 85))
         );
 
         jMenu1.setText("Generisanje kljuceva");
@@ -1139,13 +1141,14 @@ public class MainFrame extends javax.swing.JFrame {
     private void potvrdaSlanjeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_potvrdaSlanjeActionPerformed
         try {
             
-            FileOutputStream out = null;          
+            FileOutputStream out = null;    
+            List<PGPPublicKey> publicKeys=new ArrayList<>();
             if(enkripcija.isSelected()){
                 if(javniKljuceviSlanje.getSelectedValue()==null){
                     throw new Exception("Morate izabrati javni kljuc!");
                 }
                 List<String> selectedPublicKeys=javniKljuceviSlanje.getSelectedValuesList();
-                //List<PGPPublicKey> publicKeys<>
+
                 for(String value:selectedPublicKeys){
                     PGPPublicKey publicKey = null;
                     PGPPublicKeyRing publicRing = publicKeyCollection.getPublicKeyRing(Long.parseLong(value));
@@ -1157,13 +1160,13 @@ public class MainFrame extends javax.swing.JFrame {
                             System.out.println("Nadjen kljuc " + key.getKeyID());
                             if (key.isEncryptionKey()) {
                                 publicKey = key;
-                                
+                                publicKeys.add(key);
                             }
                         }
                     }
                 }
             }
-            try {
+
                 String inputFileName = fajlSlanje.getText() + ".txt";
                 out = new FileOutputStream(fajlSlanje.getText() + ".pgp");
 
@@ -1172,48 +1175,40 @@ public class MainFrame extends javax.swing.JFrame {
                         throw new Exception("Morate izabrati tajni kljuc!");
                     }
                     
-                    PGPSecretKeyRing secretRing = secretKeyCollection.getSecretKeyRing(Long.parseLong(privatniKljuceviSlanje.getSelectedValue()));
-                    PGPSecretKey secretKey = null;
-                    while (secretKey == null) {
-                        Iterator<PGPSecretKey> kIt = secretRing.getSecretKeys();
-                        while (secretKey == null && kIt.hasNext()) {
-                            PGPSecretKey key = kIt.next();
-                            System.out.println("Nadjen kljuc " + key.getKeyID());
-                            if (key.isSigningKey()) {
-                                secretKey = key;
+                    List<String> selectedSecretKeys=privatniKljuceviSlanje.getSelectedValuesList();
+                    List<PGPSecretKey> secretKeys=new ArrayList<>();
+                    
+                    for(String value:selectedSecretKeys){
+                        PGPSecretKeyRing secretRing = secretKeyCollection.getSecretKeyRing(Long.parseLong(value));
+                        PGPSecretKey secretKey = null;
+                        while (secretKey == null) {
+                            Iterator<PGPSecretKey> kIt = secretRing.getSecretKeys();
+                            while (secretKey == null && kIt.hasNext()) {
+                                PGPSecretKey key = kIt.next();
+                                System.out.println("Nadjen kljuc " + key.getKeyID());
+                                if (key.isSigningKey()) {
+                                    secretKey = key;
+                                    secretKeys.add(key);
+                                }
                             }
                         }
                     }
+                    
 
-                    PGPUtils.signEncryptFile(out, inputFileName, publicKey, secretKey, lozinkaSlanje.getText(), konverzija.isSelected(), true, kompresija.isSelected(),enkripcija.isSelected(),idea.isSelected()?1:2);
+                    PGPUtils.signEncryptFile(out, inputFileName, publicKeys, secretKeys.get(0), lozinkaSlanje.getText(), konverzija.isSelected(), true, kompresija.isSelected(),enkripcija.isSelected(),idea.isSelected()?1:2);
                 } else {
-                    PGPUtils.encryptFile(out, inputFileName, publicKey, konverzija.isSelected(), true, kompresija.isSelected(),enkripcija.isSelected(),idea.isSelected()?1:2);
+                    PGPUtils.encryptFile(out, inputFileName, publicKeys, konverzija.isSelected(), true, kompresija.isSelected(),enkripcija.isSelected(),idea.isSelected()?1:2);
                 }
                 uspeh.setText("Uspeh!");
                 out.close();
 
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (NoSuchProviderException ex) {
-                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (Exception ex) {
-                greska.setText(ex.getMessage());
-                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-            } finally {
-                try {
-                    out.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
         } catch (PGPException ex) {
+            greska.setText(ex.getMessage());
             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
             greska.setText(ex.getMessage());
             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        } 
     }//GEN-LAST:event_potvrdaSlanjeActionPerformed
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
@@ -1278,12 +1273,13 @@ public class MainFrame extends javax.swing.JFrame {
         imeAutor.setText("");
         mailAutor.setText("");
         proveraIntegriteta.setText("");
+        pogresnaLozinka.setText("");
         jPanel5.setVisible(false);
     }//GEN-LAST:event_jMenuItem4ActionPerformed
 
     private void uveziPrivatniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uveziPrivatniActionPerformed
         try {
-            PGPSecretKeyRing pkr = new PGPSecretKeyRing(new FileInputStream(fileName.getText()), new BcKeyFingerprintCalculator());
+            PGPSecretKeyRing pkr = new PGPSecretKeyRing(PGPUtil.getDecoderStream(new FileInputStream(fileName.getText())), new BcKeyFingerprintCalculator());
             secretKeyCollection = PGPSecretKeyRingCollection.addSecretKeyRing(secretKeyCollection, pkr);
             refreshList();
         } catch (FileNotFoundException ex) {
@@ -1309,23 +1305,34 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void izveziActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_izveziActionPerformed
         try {
-            int index = jList1.getSelectedIndex();
-            PGPPublicKeyRing ring = null;
-            Iterator<PGPPublicKeyRing> rIt = publicKeyCollection.getKeyRings();
+            int index = publicKeys.getSelectedIndex();
+            if(index>=0){
+                PGPPublicKeyRing ring = null;
+                Iterator<PGPPublicKeyRing> rIt = publicKeyCollection.getKeyRings();
 
-            for (int i = 0; i < index + 1; i++) {
-                ring = rIt.next();
+                for (int i = 0; i < index + 1; i++) {
+                    ring = rIt.next();
+                }
+
+                ArmoredOutputStream secretOut = new ArmoredOutputStream(new FileOutputStream("" + publicKeys.getSelectedValue() + ".asc"));
+                ring.encode(secretOut);
+                secretOut.close();
             }
+            else{
+                index = secretKeys.getSelectedIndex();
+                if(index>=0){
+                    PGPSecretKeyRing ring = null;
+                    Iterator<PGPSecretKeyRing> rIt = secretKeyCollection.getKeyRings();
 
-            /*BufferedOutputStream pubout = new BufferedOutputStream
-            (new FileOutputStream(""+jList1.getSelectedValue()+".asc"));
-            
-            ring.encode(pubout);
-            pubout.close();*/
-            //PGPSecretKeyRing pkr=new PGPSecretKeyRing(new FileInputStream("secret.asc"),new BcKeyFingerprintCalculator());
-            ArmoredOutputStream secretOut = new ArmoredOutputStream(new FileOutputStream("" + jList1.getSelectedValue() + ".asc"));
-            ring.encode(secretOut);
-            secretOut.close();
+                    for (int i = 0; i < index + 1; i++) {
+                        ring = rIt.next();
+                    }
+
+                    ArmoredOutputStream secretOut = new ArmoredOutputStream(new FileOutputStream("" + secretKeys.getSelectedValue() + ".asc"));
+                    ring.encode(secretOut);
+                    secretOut.close();
+                }
+            }
 
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -1405,7 +1412,6 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JTextField ime;
     private javax.swing.JLabel imeAutor;
     private javax.swing.JTextField inputFile;
-    private javax.swing.JButton izaberiKljuc;
     private javax.swing.JButton izvezi;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
@@ -1427,7 +1433,6 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
@@ -1448,6 +1453,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JList<String> javniKljuceviSlanje;
@@ -1470,9 +1476,11 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton potvrdaSlanje;
     private javax.swing.JList<String> privatniKljuceviSlanje;
     private javax.swing.JLabel proveraIntegriteta;
+    private javax.swing.JList<String> publicKeys;
     private javax.swing.JRadioButton rsa1;
     private javax.swing.JRadioButton rsa2;
     private javax.swing.JRadioButton rsa3;
+    private javax.swing.JList<String> secretKeys;
     private javax.swing.JLabel uspeh;
     private javax.swing.JButton uveziJavni;
     private javax.swing.JButton uveziPrivatni;
@@ -1487,7 +1495,17 @@ public class MainFrame extends javax.swing.JFrame {
             modelAddList.addElement("" + ring.getPublicKey().getKeyID());
         }
 
-        jList1.setModel(modelAddList);
+        publicKeys.setModel(modelAddList);
+        
+        DefaultListModel<String> modelAddList2 = new DefaultListModel();
+
+        Iterator<PGPSecretKeyRing> rIt2 = secretKeyCollection.getKeyRings();
+        while (rIt2.hasNext()) {
+            PGPSecretKeyRing ring = rIt2.next();
+            modelAddList2.addElement("" + ring.getSecretKey().getKeyID());
+        }
+
+        secretKeys.setModel(modelAddList2);
     }
 
     private void showKeys() {
@@ -1618,7 +1636,7 @@ public class MainFrame extends javax.swing.JFrame {
         }
     }
     
-    public static void decryptAndVerify(InputStream in, OutputStream fOut, PGPSecretKeyRingCollection secretKeyCollection, char[] passwd, PGPPublicKeyRingCollection publicKeyCollection, JLabel ime, JLabel mail, JLabel autor) throws IOException, SignatureException, PGPException {
+    public static void decryptAndVerify(InputStream in, OutputStream fOut, PGPSecretKeyRingCollection secretKeyCollection, char[] passwd, PGPPublicKeyRingCollection publicKeyCollection, JLabel ime, JLabel mail, JLabel autor) throws IOException, SignatureException, PGPException, Exception {
         in = PGPUtil.getDecoderStream(in);
 
         PGPObjectFactory pgpF = new PGPObjectFactory(in, new BcKeyFingerprintCalculator());
@@ -1700,6 +1718,9 @@ public class MainFrame extends javax.swing.JFrame {
                                 throw new SignatureException("Signature verification failed");
                             }
                         }
+                        else{
+                            autor.setText("Poruka je potpisana, ali ne postoji odgovarajuci javni kljuc!");
+                        }
                     }
 
                 }
@@ -1713,12 +1734,7 @@ public class MainFrame extends javax.swing.JFrame {
             
             enc = (PGPEncryptedDataList) pgpF.nextObject();
         }
-
-        if(enc==null){
-            //NOT ENCRYPTED MESSAGE
-            
-            
-        }
+        
         //
         // find the secret key
         //
@@ -1729,11 +1745,15 @@ public class MainFrame extends javax.swing.JFrame {
         while (sKey == null && it.hasNext()) {
             pbe = it.next();
 
-            sKey = findPrivateKey(secretKeyCollection.getSecretKey(pbe.getKeyID()), passwd);
+            try{
+                sKey = findPrivateKey(secretKeyCollection.getSecretKey(pbe.getKeyID()), passwd);
+            } catch(Exception ex){
+                
+            }
         }
 
         if (sKey == null) {
-            throw new IllegalArgumentException("Secret key for message not found.");
+            throw new Exception("Secret key for message not found.");
         }
 
         InputStream clear = pbe.getDataStream(new BcPublicKeyDataDecryptorFactory(sKey));
@@ -1799,6 +1819,9 @@ public class MainFrame extends javax.swing.JFrame {
                     } else {
                         throw new SignatureException("Signature verification failed");
                     }
+                }
+                else{
+                    autor.setText("Poruka je potpisana, ali ne postoji odgovarajuci javni kljuc!");
                 }
             }
 
