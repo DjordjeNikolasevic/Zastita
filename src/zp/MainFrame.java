@@ -64,6 +64,7 @@ import static zp.PGPUtils.findPrivateKey;
 import static zp.RSAGen.generateKeyRingGenerator;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.bouncycastle.openpgp.PGPEncryptedData;
 import org.bouncycastle.openpgp.PGPOnePassSignature;
 import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPSignatureList;
@@ -1194,10 +1195,9 @@ public class MainFrame extends javax.swing.JFrame {
                         }
                     }
                     
-
-                    PGPUtils.signEncryptFile(out, inputFileName, publicKeys, secretKeys.get(0), lozinkaSlanje.getText(), konverzija.isSelected(), true, kompresija.isSelected(),enkripcija.isSelected(),idea.isSelected()?1:2);
+                    PGPUtils.signEncryptFile(out, inputFileName, publicKeys, secretKeys.get(0), lozinkaSlanje.getText(), konverzija.isSelected(), true, kompresija.isSelected(),enkripcija.isSelected(),idea.isSelected()?PGPEncryptedData.IDEA:PGPEncryptedData.TRIPLE_DES);
                 } else {
-                    PGPUtils.encryptFile(out, inputFileName, publicKeys, konverzija.isSelected(), true, kompresija.isSelected(),enkripcija.isSelected(),idea.isSelected()?1:2);
+                    PGPUtils.encryptFile(out, inputFileName, publicKeys, konverzija.isSelected(), true, kompresija.isSelected(),enkripcija.isSelected(),idea.isSelected()?PGPEncryptedData.IDEA:PGPEncryptedData.TRIPLE_DES);
                 }
                 uspeh.setText("Uspeh!");
                 out.close();
