@@ -25,6 +25,7 @@ import java.security.SignatureException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.JLabel;
  
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
@@ -254,5 +255,207 @@ public class PGPUtils {
         if (armor) {
             out.close();
         }
+    }
+    
+     public static void decryptAndVerify(InputStream in, OutputStream fOut, PGPSecretKeyRingCollection secretKeyCollection, char[] passwd, PGPPublicKeyRingCollection publicKeyCollection, JLabel ime, JLabel mail, JLabel autor) throws IOException, SignatureException, PGPException, Exception {
+        in = PGPUtil.getDecoderStream(in);
+
+        PGPObjectFactory pgpF = new PGPObjectFactory(in, new BcKeyFingerprintCalculator());
+        PGPEncryptedDataList enc;
+
+        Object o = pgpF.nextObject();
+        //
+        // the first object might be a PGP marker packet.
+        //
+        if (o instanceof PGPEncryptedDataList) {
+            enc = (PGPEncryptedDataList) o;
+        } else {
+            if (o instanceof PGPCompressedData) {
+                PGPCompressedData compressedData = (PGPCompressedData) o;
+                pgpF  = new PGPObjectFactory(compressedData.getDataStream(),new BcKeyFingerprintCalculator());
+                o = pgpF.nextObject();
+            }
+            else{
+                o=pgpF.nextObject();
+            }
+            if(!(o instanceof PGPEncryptedDataList)){
+                Object message=o;
+
+                PGPOnePassSignatureList onePassSignatureList = null;
+                PGPSignatureList signatureList = null;
+                PGPCompressedData compressedData;
+
+                //message = pgpF.nextObject();
+                ByteArrayOutputStream actualOutput = new ByteArrayOutputStream();
+
+                while (message != null) {
+                    System.out.println(message.toString());
+                    if (message instanceof PGPCompressedData) {
+                        compressedData = (PGPCompressedData) message;
+                        pgpF  = new PGPObjectFactory(compressedData.getDataStream(),new BcKeyFingerprintCalculator());
+                        message = pgpF.nextObject();
+                    }
+
+                    if (message instanceof PGPLiteralData) {
+                        // have to read it and keep it somewhere.
+                        Streams.pipeAll(((PGPLiteralData) message).getInputStream(), actualOutput);
+                    } else if (message instanceof PGPOnePassSignatureList) {
+                        onePassSignatureList = (PGPOnePassSignatureList) message;
+                    } else if (message instanceof PGPSignatureList) {
+                        signatureList = (PGPSignatureList) message;
+                    } else {
+                        throw new PGPException("message unknown message type.");
+                    }
+                    message = pgpF.nextObject();
+                }
+                actualOutput.close();
+                PGPPublicKey publicKey = null;
+                byte[] output = actualOutput.toByteArray();
+                if (onePassSignatureList == null || signatureList == null) {
+                    //throw new PGPException("Poor PGP. Signatures not found.");
+                } else {
+
+                    for (int i = 0; i < onePassSignatureList.size(); i++) {
+                        PGPOnePassSignature ops = onePassSignatureList.get(0);
+                        System.out.println("verifier : " + ops.getKeyID());
+                        PGPPublicKeyRingCollection pgpRing = publicKeyCollection;
+                        publicKey = pgpRing.getPublicKey(ops.getKeyID());
+                        if (publicKey != null) {
+                            ops.init(new BcPGPContentVerifierBuilderProvider(), publicKey);
+                            ops.update(output);
+                            PGPSignature signature = signatureList.get(i);
+                            if (ops.verify(signature)) {
+                                Iterator<?> userIds = publicKey.getUserIDs();
+                                while (userIds.hasNext()) {
+                                    String userId = (String) userIds.next();
+                                    String strArray[]=userId.split("/");
+                                    ime.setText(strArray[0]);
+                                    mail.setText(strArray[1]);
+                                    autor.setText("Autor:");
+                                    System.out.println(String.format("Signed by {%s}", userId));
+                                }
+                                System.out.println("Signature verified");
+                            } else {
+                                throw new SignatureException("Signature verification failed");
+                            }
+                        }
+                        else{
+                            autor.setText("Poruka je potpisana, ali ne postoji odgovarajuci javni kljuc!");
+                        }
+                    }
+
+                }
+
+                fOut.write(output);
+                fOut.flush();
+                fOut.close();
+                
+                return;
+            }
+            
+            enc = (PGPEncryptedDataList) pgpF.nextObject();
+        }
+        
+        //
+        // find the secret key
+        //
+        Iterator<PGPPublicKeyEncryptedData> it = enc.getEncryptedDataObjects();
+        PGPPrivateKey sKey = null;
+        PGPPublicKeyEncryptedData pbe = null;
+
+        while (sKey == null && it.hasNext()) {
+            pbe = it.next();
+
+            try{
+                sKey = findPrivateKey(secretKeyCollection.getSecretKey(pbe.getKeyID()), passwd);
+            } catch(Exception ex){
+                
+            }
+        }
+
+        if (sKey == null) {
+            throw new Exception("Secret key for message not found.");
+        }
+
+        InputStream clear = pbe.getDataStream(new BcPublicKeyDataDecryptorFactory(sKey));
+
+        PGPObjectFactory plainFact = new PGPObjectFactory(clear, new BcKeyFingerprintCalculator());
+
+        Object message;
+
+        PGPOnePassSignatureList onePassSignatureList = null;
+        PGPSignatureList signatureList = null;
+        PGPCompressedData compressedData;
+
+        message = plainFact.nextObject();
+        ByteArrayOutputStream actualOutput = new ByteArrayOutputStream();
+
+        while (message != null) {
+            System.out.println(message.toString());
+            if (message instanceof PGPCompressedData) {
+                compressedData = (PGPCompressedData) message;
+                plainFact  = new PGPObjectFactory(compressedData.getDataStream(),new BcKeyFingerprintCalculator());
+                message = plainFact.nextObject();
+            }
+
+            if (message instanceof PGPLiteralData) {
+                // have to read it and keep it somewhere.
+                Streams.pipeAll(((PGPLiteralData) message).getInputStream(), actualOutput);
+            } else if (message instanceof PGPOnePassSignatureList) {
+                onePassSignatureList = (PGPOnePassSignatureList) message;
+            } else if (message instanceof PGPSignatureList) {
+                signatureList = (PGPSignatureList) message;
+            } else {
+                throw new PGPException("message unknown message type.");
+            }
+            message = plainFact.nextObject();
+        }
+        actualOutput.close();
+        PGPPublicKey publicKey = null;
+        byte[] output = actualOutput.toByteArray();
+        if (onePassSignatureList == null || signatureList == null) {
+            //throw new PGPException("Poor PGP. Signatures not found.");
+        } else {
+
+            for (int i = 0; i < onePassSignatureList.size(); i++) {
+                PGPOnePassSignature ops = onePassSignatureList.get(0);
+                System.out.println("verifier : " + ops.getKeyID());
+                PGPPublicKeyRingCollection pgpRing = publicKeyCollection;
+                publicKey = pgpRing.getPublicKey(ops.getKeyID());
+                if (publicKey != null) {
+                    ops.init(new BcPGPContentVerifierBuilderProvider(), publicKey);
+                    ops.update(output);
+                    PGPSignature signature = signatureList.get(i);
+                    if (ops.verify(signature)) {
+                        Iterator<?> userIds = publicKey.getUserIDs();
+                        while (userIds.hasNext()) {
+                            String userId = (String) userIds.next();
+                            String strArray[]=userId.split("/");
+                            ime.setText(strArray[0]);
+                            mail.setText(strArray[1]);
+                            autor.setText("Autor:");
+                            System.out.println(String.format("Signed by {%s}", userId));
+                        }
+                        System.out.println("Signature verified");
+                    } else {
+                        throw new SignatureException("Signature verification failed");
+                    }
+                }
+                else{
+                    autor.setText("Poruka je potpisana, ali ne postoji odgovarajuci javni kljuc!");
+                }
+            }
+
+        }
+
+        if (pbe.isIntegrityProtected() && !pbe.verify()) {
+            throw new PGPException("Data is integrity protected but integrity is lost.");
+        } else if (publicKey == null) {
+            //throw new SignatureException("Signature not found");
+        }
+        fOut.write(output);
+        fOut.flush();
+        fOut.close();
+
     }
 }
